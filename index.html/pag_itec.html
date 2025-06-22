@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mi Sitio Educativo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.10/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+  <style>
+    /* Estilos para el cuerpo general de la página (Verde Limón) */
+    body {
+      background-color: #E0FF4F; /* Color verde limón */
+    }
+
+    /* Estilos para ocultar secciones al inicio */
+    #panelCarreras {
+      display: none;
+    }
+    #opcionesGrados {
+      display: none;
+    }
+    #verificarInscripcion {
+      display: none;
+    }
+    #generarReporte {
+      display: none;
+    }
+    /* Animación para el texto de bienvenida */
+    .animated-text {
+      animation: fadeIn 2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    /* Estilo para imágenes reducidas (aunque no se usa en este contexto específico de la página principal) */
+    .img-reducida {
+      max-width: 80%; /* Ajusta el tamaño máximo de la imagen */
+      height: auto; /* Mantiene la proporción de la imagen */
+    }
+    /* Estilos específicos para las tarjetas de docentes dentro del modal */
+    .docente-card-modal, .administrativo-card-modal {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: white;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        text-align: center;
+    }
+    .docente-card-modal img, .administrativo-card-modal img {
+        width: 100px; /* Tamaño de imagen más pequeño para el modal */
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 0.5rem;
+    }
+    .docente-card-modal img {
+        border: 2px solid #007bff; /* Borde azul para docentes */
+    }
+    .administrativo-card-modal img {
+        border: 2px solid #dc3545; /* Borde rojo para administrativos */
+    }
+    .carrera-section-modal h4 {
+        background-color: #e9ecef;
+        padding: 0.5rem;
+        border-radius: 0.3rem;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        border-left: 4px solid #007bff;
+    }
+    /* Estilo específico para el título de la sección de administrativos */
+    .administrativo-section-modal h4 {
+        background-color: #e9ecef;
+        padding: 0.5rem;
+        border-radius: 0.3rem;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        border-left: 4px solid #dc3545; /* Borde rojo para administrativos */
+    }
+
+    /* ESTILOS PARA EL CUERPO PRINCIPAL (CONTENIDO CENTRAL) */
+    .main-content {
+      background-color: #FFFF00; /* Ahora amarillo */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Estilo para la nueva sección de reportes de inscripciones */
+    #reporteInscripciones {
+        background-color: #f8f9fa; /* Fondo claro */
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-top: 20px;
+    }
+    /* Estilo para el contenedor del canvas del gráfico */
+    #graficoInscripcionesContainer {
+        position: relative;
+        height: 40vh; /* Altura responsiva */
+        width: 80vw; /* Ancho responsivo */
+        max-width: 600px; /* Ancho máximo */
+        margin: 20px auto; /* Centrar */
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">Mi Sitio Educativo</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalPlantelDocente">Plantel Docente</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalPersonalAdministrativo">Administrativo</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalRegistro">Registrar</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#modalLogin">Iniciar Sesión</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" id="mostrarReporteInscripciones">Ver Reporte General</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4 main-content">
+    <div class="row">
+      <div class="col-md-6 text-center">
+        <img src="examen_web/escudo.png" width="300" height="200" alt="Descripción de la imagen">
+      </div>
+      <div class="col-md-6 d-flex align-items-center">
+        <div class="animated-text">
+          <h2>Bienvenidos al INSTITUTO TECNICO SUPERIOR ITEC</h2>
+          <p>Ofrecemos una variedad de carreras y recursos para tu desarrollo académico.</p>
+          <p>¡Explora, aprende y crece con nosotros!</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-4">
+      <div class="col-md-8">
+        <div id="carouselEducativo" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner rounded shadow">
+            <div class="carousel-item active">
+              <img src="examen_web/itec.jpg" class="d-block w-100" alt="Imagen 1">
+            </div>
+            <div class="carousel-item">
+              <img src="examen_web/carreras.jpg" class="d-block w-100" alt="Imagen 2">
+            </div>
+            <div class="carousel-item">
+              <img src="examen_web/docentes.jpg" class="d-block w-100" alt="Imagen 3">
+            </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselEducativo" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselEducativo" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-4" id="panelCarreras">
+        <h4>Datos Personales</h4>
+        <form id="formDatosPersonales">
+          <input type="hidden" id="inscripcionIndex"> <input type="text" id="nombres" class="form-control mb-2" placeholder="Nombres" required>
+          <input type="text" id="apellidoPaterno" class="form-control mb-2" placeholder="Apellido Paterno" required>
+          <input type="text" id="apellidoMaterno" class="form-control mb-2" placeholder="Apellido Materno" required>
+          <input type="date" id="fechaNacimiento" class="form-control mb-2" required>
+          <input type="text" id="ci" class="form-control mb-2" placeholder="Cédula de Identidad" required>
+          <select id="genero" class="form-select mb-2" required>
+            <option value="">Seleccione Género</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+          </select>
+          <button type="button" id="guardarDatosPersonales" class="btn btn-primary mt-2">Guardar Datos</button>
+        </form>
+
+        <div id="seccionInscripcion" style="display: none;">
+          <h4>Inscripción a Carreras</h4>
+          <form id="formCarreras">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="carrera" value="Secretariado Ejecutivo" id="carrera1">
+              <label class="form-check-label" for="carrera1">Secretariado Ejecutivo</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="carrera" value="Contabilidad" id="carrera2">
+              <label class="form-check-label" for="carrera2">Contabilidad</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="carrera" value="Sistemas Informáticos" id="carrera3">
+              <label class="form-check-label" for="carrera3">Sistemas Informáticos</label>
+            </div>
+            <div id="opcionesGrados" class="mt-3">
+              <h5>Selecciona Grado y Paralelo</h5>
+              <select id="grado" class="form-select mb-2" required>
+                <option value="">Seleccione Grado</option>
+                <option value="Primero">Primero</option>
+                <option value="Segundo">Segundo</option>
+                <option value="Tercero">Tercero</option>
+              </select>
+              <select id="paralelo" class="form-select" required>
+                <option value="">Seleccione Paralelo</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
+            </div>
+            <button type="button" id="verificarInscripcion" class="btn btn-primary mt-2">Verificar y Guardar Inscripción</button>
+            <button type="button" id="generarReporte" class="btn btn-success mt-2" style="display: none;">Generar Reporte PDF Individual</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4" id="reporteInscripciones" style="display: none;">
+        <div class="col-12">
+            <h3>Reporte General de Inscripciones</h3>
+            <p>Aquí se muestra la cantidad de inscritos por carrera.</p>
+            <div id="resumenInscripciones">
+                <div id="graficoInscripcionesContainer">
+                    <canvas id="graficoInscripciones"></canvas>
+                </div>
+                <div id="detalleTablaInscripciones" style="display: none;"> 
+                    </div>
+            </div>
+            <button type="button" id="toggleDetalleTabla" class="btn btn-secondary mt-3">Mostrar/Ocultar Detalle</button>
+            <button type="button" id="generarReporteGeneralPDF" class="btn btn-success mt-3 ms-2">Generar Reporte General en PDF</button>
+            <button type="button" id="cerrarReporteGeneral" class="btn btn-secondary mt-3 ms-2">Cerrar Reporte</button>
+        </div>
+    </div>
+  </main>
+
+  <footer class="bg-light text-center text-lg-start">
+    <div class="text-center p-3">
+      © 2025 Mi Sitio Educativo
+    </div>
+    <div class="bg-primary text-white text-center p-2">
+      <span>Síguenos en: </span>
+      <a href="#" class="text-white mx-2"><i class="bi bi-facebook"></i></a>
+      <a href="#" class="text-white mx-2"><i class="bi bi-whatsapp"></i></a>
+      <a href="#" class="text-white mx-2"><i class="bi bi-tiktok"></i></a>
+    </div>
+  </footer>
+
+  <div class="modal fade" id="modalRegistro" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formRegistro">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Registro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="text" id="usuario" class="form-control mb-2" placeholder="Usuario" required>
+            <input type="password" id="contrasena" class="form-control mb-2" placeholder="Contraseña" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Registrarse</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalLogin" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formLogin">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Iniciar Sesión</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="text" id="loginUsuario" class="form-control mb-2" placeholder="Usuario" required>
+            <input type="password" id="loginContrasena" class="form-control mb-2" placeholder="Contraseña" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalPlantelDocente" tabindex="-1" aria-labelledby="modalPlantelDocenteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable"> <div class="modal-content">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title" id="modalPlantelDocenteLabel"><i class="bi bi-mortarboard-fill"></i> Nuestro Plantel Docente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="carrera-section-modal">
+                <h4>Secretariado Ejecutivo</h4>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente1.jpg" alt="Lic. Ana García" class="img-fluid">
+                            <h6>Lic. Ana García</h6>
+                            <p class="mb-0 text-muted">Redacción y Archivo</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente2.jpg" alt="Lic. María Lopez" class="img-fluid">
+                            <h6>Lic. María Lopez</h6>
+                            <p class="mb-0 text-muted">Técnicas de Oficina</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente7.jpg" alt="Lic. Pedro Gómez" class="img-fluid">
+                            <h6>Lic. Pedro Gómez</h6>
+                            <p class="mb-0 text-muted">Comunicación Empresarial</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="carrera-section-modal">
+                <h4>Contabilidad</h4>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente3.jpg" alt="Lic. Sofía Rojas" class="img-fluid">
+                            <h6>Lic. Sofía Rojas</h6>
+                            <p class="mb-0 text-muted">Contabilidad Financiera</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente4.jpg" alt="Lic. Carlos Vaca" class="img-fluid">
+                            <h6>Lic. Carlos Vaca</h6>
+                            <p class="mb-0 text-muted">Auditoría y Costos</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente8.jpg" alt="Lic. Elena Díaz" class="img-fluid">
+                            <h6>Lic. Elena Díaz</h6>
+                            <p class="mb-0 text-muted">Tributación</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="carrera-section-modal">
+                <h4>Sistemas Informáticos</h4>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente5.jpg" alt="Ing. Laura Montes" class="img-fluid">
+                            <h6>Ing. Laura Montes</h6>
+                            <p class="mb-0 text-muted">Desarrollo de Software</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente6.jpg" alt="Ing. Miguel Soto" class="img-fluid">
+                            <h6>Ing. Miguel Soto</h6>
+                            <p class="mb-0 text-muted">Redes y Bases de Datos</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="docente-card-modal">
+                            <img src="examen_web/docente9.jpg" alt="Ing. Roberto Quispe" class="img-fluid">
+                            <h6>Ing. Roberto Quispe</h6>
+                            <p class="mb-0 text-muted">Seguridad Informática</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalPersonalAdministrativo" tabindex="-1" aria-labelledby="modalPersonalAdministrativoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white"> <h5 class="modal-title" id="modalPersonalAdministrativoLabel"><i class="bi bi-person-workspace"></i> Nuestro Personal Administrativo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="administrativo-section-modal">
+                <h4>Administración General y Secretaría</h4>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/rector.jpg" alt="Lic. Juan Pérez" class="img-fluid"> <h6>Lic. Juan Pérez</h6>
+                            <p class="mb-0 text-muted">Rector</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/admin1.jpg" alt="Lic. Carla Blanco" class="img-fluid">
+                            <h6>Lic. Carla Blanco</h6>
+                            <p class="mb-0 text-muted">Jefe de Secretaría</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/admin2.jpg" alt="Srta. Valeria Paz" class="img-fluid">
+                            <h6>Srta. Valeria Paz</h6>
+                            <p class="mb-0 text-muted">Asistente Administrativa</p>
+                        </div>
+                    </div>
+                    </div>
+            </div>
+
+            <hr>
+
+            <div class="administrativo-section-modal">
+                <h4>Contabilidad y Finanzas</h4>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/admin3.jpg" alt="C.P.N. Marcos Soto" class="img-fluid">
+                            <h6>C.P.N. Marcos Soto</h6>
+                            <p class="mb-0 text-muted">Jefe de Contabilidad</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/admin4.jpg" alt="Sr. Luis Ramos" class="img-fluid">
+                            <h6>Sr. Luis Ramos</h6>
+                            <p class="mb-0 text-muted">Auxiliar Contable</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="administrativo-section-modal">
+                <h4>Soporte de Sistemas y Tecnología</h4>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/admin5.jpg" alt="Ing. Daniel Torres" class="img-fluid">
+                            <h6>Ing. Daniel Torres</h6>
+                            <p class="mb-0 text-muted">Jefe de Soporte TI</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="administrativo-card-modal">
+                            <img src="examen_web/admin6.jpg" alt="Srta. Gabriela Vega" class="img-fluid">
+                            <h6>Srta. Gabriela Vega</h6>
+                            <p class="mb-0 text-muted">Técnico de Redes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const { jsPDF } = window.jspdf;
+    // Referencias a elementos del DOM
+    const panelCarreras = document.getElementById('panelCarreras');
+    const opcionesGrados = document.getElementById('opcionesGrados');
+    const verificarInscripcionBtn = document.getElementById('verificarInscripcion');
+    const generarReporteBtn = document.getElementById('generarReporte');
+    const carreraRadios = document.querySelectorAll('input[name="carrera"]');
+    const seccionInscripcion = document.getElementById('seccionInscripcion');
+    const formDatosPersonales = document.getElementById('formDatosPersonales');
+    const formCarreras = document.getElementById('formCarreras');
+    const reporteInscripcionesDiv = document.getElementById('reporteInscripciones');
+    const resumenInscripcionesDiv = document.getElementById('resumenInscripciones');
+    const mostrarReporteInscripcionesBtn = document.getElementById('mostrarReporteInscripciones');
+    const cerrarReporteGeneralBtn = document.getElementById('cerrarReporteGeneral');
+    const generarReporteGeneralPDFBtn = document.getElementById('generarReporteGeneralPDF');
+    const detalleTablaInscripciones = document.getElementById('detalleTablaInscripciones');
+    const toggleDetalleTablaBtn = document.getElementById('toggleDetalleTabla');
+
+
+    // Campos del formulario de datos personales
+    const nombresInput = document.getElementById('nombres');
+    const apellidoPaternoInput = document.getElementById('apellidoPaterno');
+    const apellidoMaternoInput = document.getElementById('apellidoMaterno');
+    const fechaNacimientoInput = document.getElementById('fechaNacimiento');
+    const ciInput = document.getElementById('ci');
+    const generoSelect = document.getElementById('genero');
+    const inscripcionIndexInput = document.getElementById('inscripcionIndex'); // Campo oculto para el índice
+
+    let inscripcionData = {}; // Objeto para almacenar los datos de la inscripción actual
+    let myChart = null; // Variable para almacenar la instancia del gráfico de Chart.js
+
+    // Función para cargar inscripciones desde localStorage
+    function cargarInscripciones() {
+      const inscripcionesJSON = localStorage.getItem('inscripcionesITEC');
+      return inscripcionesJSON ? JSON.parse(inscripcionesJSON) : [];
+    }
+
+    // Función para guardar inscripciones en localStorage
+    function guardarInscripciones(inscripciones) {
+      localStorage.setItem('inscripcionesITEC', JSON.stringify(inscripciones));
+    }
+
+    // --- Funcionalidad de Registro de Usuario ---
+    document.getElementById('formRegistro').addEventListener('submit', function(e) {
+      e.preventDefault(); // Previene el envío del formulario por defecto
+      const usuario = document.getElementById('usuario').value;
+      const contrasena = document.getElementById('contrasena').value;
+
+      if (usuario && contrasena) {
+        localStorage.setItem('usuario', usuario); // Guarda usuario en localStorage
+        localStorage.setItem('contrasena', contrasena); // Guarda contraseña en localStorage
+        alert('Registro exitoso. Ahora puedes iniciar sesión.');
+        bootstrap.Modal.getInstance(document.getElementById('modalRegistro')).hide(); // Cierra el modal de registro
+      } else {
+        alert('Por favor, ingresa un usuario y una contraseña para registrarte.');
+      }
+    });
+
+    // --- Funcionalidad de Login de Usuario ---
+    document.getElementById('formLogin').addEventListener('submit', function(e) {
+      e.preventDefault(); // Previene el envío del formulario por defecto
+      const loginUsuario = document.getElementById('loginUsuario').value;
+      const loginContrasena = document.getElementById('loginContrasena').value;
+
+      const storedUsuario = localStorage.getItem('usuario'); // Obtiene usuario guardado
+      const storedContrasena = localStorage.getItem('contrasena'); // Obtiene contraseña guardada
+
+      if (loginUsuario === storedUsuario && loginContrasena === storedContrasena) {
+        alert('Inicio de sesión exitoso. ¡Bienvenido!');
+        panelCarreras.style.display = 'block'; // Muestra el panel de datos personales y carreras
+        bootstrap.Modal.getInstance(document.getElementById('modalLogin')).hide(); // Cierra el modal de login
+        // Limpia los campos del formulario de login después de un inicio de sesión exitoso
+        document.getElementById('loginUsuario').value = '';
+        document.getElementById('loginContrasena').value = '';
+      } else {
+        alert('Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo o regístrate.');
+      }
+    });
+
+    // --- Guardar Datos Personales (y/o Actualizar) ---
+    document.getElementById('guardarDatosPersonales').addEventListener('click', function() {
+      if (formDatosPersonales.checkValidity()) {
+        const index = inscripcionIndexInput.value; // Obtener el índice del campo oculto
+
+        // Si el índice existe, estamos modificando una inscripción existente
+        if (index !== "" && !isNaN(index)) {
+          let inscripciones = cargarInscripciones();
+          const inscripcionToUpdate = inscripciones[parseInt(index)];
+          
+          if (inscripcionToUpdate) {
+            inscripcionToUpdate.nombres = nombresInput.value;
+            inscripcionToUpdate.apellidoPaterno = apellidoPaternoInput.value;
+            inscripcionToUpdate.apellidoMaterno = apellidoMaternoInput.value;
+            inscripcionToUpdate.fechaNacimiento = fechaNacimientoInput.value;
+            inscripcionToUpdate.ci = ciInput.value;
+            inscripcionToUpdate.genero = generoSelect.value;
+            
+            // Si la inscripción ya tenía carrera, grado, paralelo, mantenlos
+            // o podrías requerir que el usuario los seleccione de nuevo para modificar también
+            // Por simplicidad, aquí solo actualizamos los datos personales.
+            // Para modificar carrera/grado/paralelo, el flujo sería similar.
+
+            guardarInscripciones(inscripciones);
+            alert('Datos personales de la inscripción actualizados con éxito.');
+            actualizarResumenInscripciones(); // Actualiza la tabla de reporte
+            limpiarFormularios(); // Limpia los formularios después de guardar
+            seccionInscripcion.style.display = 'none'; // Oculta la sección de inscripción
+            panelCarreras.style.display = 'none'; // Oculta el panel principal para que inicie de nuevo
+          } else {
+            alert('Error: Inscripción no encontrada para actualizar.');
+          }
+        } else { // Si no hay índice, es una nueva inscripción
+          inscripcionData = {
+            nombres: nombresInput.value,
+            apellidoPaterno: apellidoPaternoInput.value,
+            apellidoMaterno: apellidoMaternoInput.value,
+            fechaNacimiento: fechaNacimientoInput.value,
+            ci: ciInput.value,
+            genero: generoSelect.value,
+            fechaInscripcion: new Date().toLocaleDateString('es-ES')
+          };
+          seccionInscripcion.style.display = 'block';
+          alert('Datos personales guardados. Ahora puedes seleccionar una carrera.');
+        }
+      } else {
+        alert('Por favor, completa todos los campos de datos personales antes de continuar.');
+        formDatosPersonales.reportValidity();
+      }
+    });
+
+    // --- Mostrar opciones de Grado y Paralelo al seleccionar una Carrera ---
+    carreraRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        opcionesGrados.style.display = 'block';
+        // El botón generarReporte y verificarInscripcion se controlarán con el nuevo flujo
+        generarReporteBtn.style.display = 'none'; 
+        verificarInscripcionBtn.style.display = 'block';
+        verificarInscripcionBtn.textContent = 'Verificar y Guardar Inscripción'; // Asegura el texto correcto
+      });
+    });
+
+    // --- Lógica para el botón "Verificar y Guardar Inscripción" (unifica la funcionalidad) ---
+    verificarInscripcionBtn.addEventListener('click', function() {
+      const selectedCarreraRadio = document.querySelector('input[name="carrera"]:checked');
+      
+      if (!inscripcionData.nombres) { // Asegurarse de que los datos personales estén cargados
+        alert("Por favor, guarda tus datos personales primero.");
+        return;
+      }
+
+      if (!selectedCarreraRadio) {
+        alert('Por favor, selecciona una carrera.');
+        return;
+      }
+
+      inscripcionData.carrera = selectedCarreraRadio.value;
+      inscripcionData.grado = document.getElementById('grado').value;
+      inscripcionData.paralelo = document.getElementById('paralelo').value;
+
+      if (inscripcionData.carrera && inscripcionData.grado && inscripcionData.paralelo) {
+        let inscripciones = cargarInscripciones();
+        
+        const index = inscripcionIndexInput.value;
+        if (index !== "" && !isNaN(index)) { // Si estamos en modo modificación
+            inscripciones[parseInt(index)] = { ...inscripciones[parseInt(index)], ...inscripcionData }; // Actualiza solo los campos cambiados de inscripcionData
+            alert('¡Inscripción actualizada con éxito!');
+        } else { // Si es una nueva inscripción
+            inscripciones.push(inscripcionData); 
+            alert('¡Inscripción completada y guardada con éxito!');
+        }
+        
+        guardarInscripciones(inscripciones); 
+        actualizarResumenInscripciones(); // Refresca el reporte general
+
+        // Después de guardar, muestra la opción de generar el reporte individual
+        generarReporteBtn.style.display = 'block'; 
+        verificarInscripcionBtn.style.display = 'none'; // Oculta este botón
+        formCarreras.reset(); // Limpia los campos de carrera, grado, paralelo
+        opcionesGrados.style.display = 'none'; // Oculta las opciones de grado/paralelo
+        
+      } else {
+        alert('Por favor, selecciona el grado y paralelo para completar la inscripción.');
+      }
+    });
+
+    // --- Evento para Generar Reporte PDF Individual ---
+    generarReporteBtn.addEventListener('click', function() {
+      if (!inscripcionData.nombres || !inscripcionData.carrera || !inscripcionData.grado || !inscripcionData.paralelo) {
+        alert("Por favor, guarda tus datos personales y verifica tu inscripción antes de generar el reporte.");
+        return;
+      }
+      generarReportePDFIndividual(); 
+    });
+
+    // --- Función para Generar el Reporte PDF de Inscripción Individual ---
+    function generarReportePDFIndividual() {
+      const doc = new jsPDF(); 
+      doc.setFontSize(18);
+      doc.text("REGISTRO DE INSCRIPCIÓN INDIVIDUAL", 105, 20, null, null, "center");
+      doc.setFontSize(12);
+      doc.text("INSTITUTO TÉCNICO SUPERIOR ITEC", 105, 27, null, null, "center");
+      doc.line(20, 32, 190, 32); 
+
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0); 
+      doc.text("1. Datos Personales del Estudiante", 20, 45);
+      doc.autoTable({
+        startY: 50, 
+        head: [['Campo', 'Valor']], 
+        body: [ 
+          ['Nombres', inscripcionData.nombres || 'N/A'],
+          ['Apellido Paterno', inscripcionData.apellidoPaterno || 'N/A'],
+          ['Apellido Materno', inscripcionData.apellidoMaterno || 'N/A'],
+          ['Fecha de Nacimiento', inscripcionData.fechaNacimiento || 'N/A'],
+          ['Cédula de Identidad', inscripcionData.ci || 'N/A'],
+          ['Género', inscripcionData.genero || 'N/A'],
+        ],
+        theme: 'grid', 
+        styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' }, 
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' }, 
+        alternateRowStyles: { fillColor: [240, 240, 240] }, 
+        columnStyles: { 0: { fontStyle: 'bold' } }, 
+        margin: { left: 20, right: 20 } 
+      });
+
+      const finalYPersonal = doc.autoTable.previous.finalY; 
+      doc.setFontSize(14);
+      doc.text("2. Datos de Inscripción a Carrera", 20, finalYPersonal + 15); 
+      doc.autoTable({
+        startY: finalYPersonal + 20, 
+        head: [['Campo', 'Valor']],
+        body: [
+          ['Carrera Seleccionada', inscripcionData.carrera || 'N/A'],
+          ['Grado', inscripcionData.grado || 'N/A'],
+          ['Paralelo', inscripcionData.paralelo || 'N/A'],
+          ['Fecha de Inscripción', inscripcionData.fechaInscripcion || 'N/A'], 
+        ],
+        theme: 'grid',
+        styles: { fontSize: 10, cellPadding: 2, overflow: 'linebreak' },
+        headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' }, 
+        alternateRowStyles: { fillColor: [240, 240, 240] },
+        columnStyles: { 0: { fontStyle: 'bold' } },
+        margin: { left: 20, right: 20 }
+      });
+
+      const finalYInscripcion = doc.autoTable.previous.finalY;
+      doc.setFontSize(10);
+      doc.setTextColor(100); 
+      doc.text(`Reporte generado el: ${new Date().toLocaleString('es-ES')} desde Mi Sitio Educativo`, 20, finalYInscripcion + 20);
+      doc.text("Firma del Estudiante: _____________________________", 20, finalYInscripcion + 40);
+      doc.text("Firma de Secretaría: ______________________________", 110, finalYInscripcion + 40);
+
+      doc.save(`registro_inscripcion_${(inscripcionData.nombres || '').replace(/\s/g, '_')}_${(inscripcionData.apellidoPaterno || '').replace(/\s/g, '_')}.pdf`);
+    }
+
+    // --- Funcionalidad para mostrar el Reporte General de Inscripciones ---
+    mostrarReporteInscripcionesBtn.addEventListener('click', function() {
+        reporteInscripcionesDiv.style.display = 'block'; 
+        actualizarResumenInscripciones(); 
+        panelCarreras.style.display = 'none'; // Oculta el formulario de inscripción
+    });
+
+    // --- Funcionalidad para cerrar el Reporte General de Inscripciones ---
+    cerrarReporteGeneralBtn.addEventListener('click', function() {
+        reporteInscripcionesDiv.style.display = 'none'; 
+        panelCarreras.style.display = 'block'; // Muestra de nuevo el formulario de inscripción
+        limpiarFormularios(); // Limpia los formularios al cerrar el reporte
+    });
+
+    // --- Función para actualizar el resumen de inscripciones en el HTML (con gráfico) ---
+    function actualizarResumenInscripciones() {
+        const inscripciones = cargarInscripciones();
+        const graficoInscripcionesCanvas = document.getElementById('graficoInscripciones');
+
+        if (inscripciones.length === 0) {
+            resumenInscripcionesDiv.innerHTML = '<p class="text-muted">No hay inscripciones registradas aún.</p>';
+            // Destruir el gráfico si no hay datos
+            if (myChart) {
+                myChart.destroy();
+                myChart = null;
+            }
+            // Ocultar el contenedor del gráfico y el botón de alternar detalle
+            document.getElementById('graficoInscripcionesContainer').style.display = 'none';
+            toggleDetalleTablaBtn.style.display = 'none';
+            return;
+        }
+
+        // Conteo por carrera
+        const conteoCarreras = {};
+        inscripciones.forEach(inscripcion => {
+            if (inscripcion.carrera) {
+                conteoCarreras[inscripcion.carrera] = (conteoCarreras[inscripcion.carrera] || 0) + 1;
+            }
+        });
+
+        // Preparar datos para el gráfico
+        const labels = Object.keys(conteoCarreras);
+        const data = Object.values(conteoCarreras);
+        const backgroundColors = [
+            'rgba(255, 99, 132, 0.6)', // Rojo
+            'rgba(54, 162, 235, 0.6)', // Azul
+            'rgba(255, 206, 86, 0.6)', // Amarillo
+            'rgba(75, 192, 192, 0.6)', // Verde azulado
+            'rgba(153, 102, 255, 0.6)', // Púrpura
+            'rgba(255, 159, 64, 0.6)'  // Naranja
+        ];
+        const borderColors = [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ];
+
+        // Destruir el gráfico existente si lo hay para evitar duplicados
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        // Crear el gráfico de barras
+        myChart = new Chart(graficoInscripcionesCanvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cantidad de Inscritos',
+                    data: data,
+                    backgroundColor: backgroundColors.slice(0, labels.length), // Usar colores según la cantidad de carreras
+                    borderColor: borderColors.slice(0, labels.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Número de Inscritos'
+                        },
+                        ticks: {
+                            precision: 0 // Asegura que los ticks sean números enteros
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Carrera'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Inscripciones por Carrera',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    legend: {
+                        display: false // No mostrar leyenda para un solo dataset
+                    }
+                }
+            }
+        });
+
+        // Mostrar el contenedor del gráfico y el botón de alternar detalle
+        document.getElementById('graficoInscripcionesContainer').style.display = 'block';
+        toggleDetalleTablaBtn.style.display = 'inline-block'; // Muestra el botón para alternar
+
+        // Generar el HTML para la tabla detallada (oculta por defecto)
+        let htmlTableContent = '<h5 class="mt-4">Detalle de Inscripciones:</h5>';
+        htmlTableContent += '<div class="table-responsive"><table class="table table-striped table-bordered table-hover">';
+        htmlTableContent += '<thead class="table-dark"><tr><th>#</th><th>Nombres</th><th>CI</th><th>Carrera</th><th>Grado</th><th>Paralelo</th><th>Fecha Insc.</th><th>Acciones</th></tr></thead>';
+        htmlTableContent += '<tbody>';
+        inscripciones.forEach((inscripcion, index) => {
+            htmlTableContent += `<tr>
+                                <td>${index + 1}</td>
+                                <td>${inscripcion.nombres || 'N/A'} ${inscripcion.apellidoPaterno || ''}</td>
+                                <td>${inscripcion.ci || 'N/A'}</td>
+                                <td>${inscripcion.carrera || 'N/A'}</td>
+                                <td>${inscripcion.grado || 'N/A'}</td>
+                                <td>${inscripcion.paralelo || 'N/A'}</td>
+                                <td>${inscripcion.fechaInscripcion || 'N/A'}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm me-1" onclick="modificarInscripcion(${index})">Modificar</button>
+                                    <button class="btn btn-danger btn-sm" onclick="eliminarInscripcion(${index})">Eliminar</button>
+                                </td>
+                            </tr>`;
+        });
+        htmlTableContent += '</tbody></table></div>'; 
+        detalleTablaInscripciones.innerHTML = htmlTableContent;
+    }
+
+    // --- Funcionalidad para Generar el Reporte General en PDF ---
+    generarReporteGeneralPDFBtn.addEventListener('click', function() {
+        const inscripciones = cargarInscripciones();
+        if (inscripciones.length === 0) {
+            alert('No hay inscripciones para generar el reporte general.');
+            return;
+        }
+
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        doc.setFontSize(18);
+        doc.text("REPORTE GENERAL DE INSCRIPCIONES", 105, yPos, null, null, "center");
+        yPos += 7;
+        doc.setFontSize(12);
+        doc.text("INSTITUTO TÉCNICO SUPERIOR ITEC", 105, yPos, null, null, "center");
+        yPos += 10;
+        doc.line(20, yPos, 190, yPos);
+        yPos += 10;
+
+        // Resumen por Carrera
+        doc.setFontSize(14);
+        doc.text("Resumen por Carrera:", 20, yPos);
+        yPos += 5;
+        const conteoCarreras = {};
+        inscripciones.forEach(inscripcion => {
+            if (inscripcion.carrera) {
+                conteoCarreras[inscripcion.carrera] = (conteoCarreras[inscripcion.carrera] || 0) + 1;
+            }
+        });
+
+        const resumenBody = Object.entries(conteoCarreras).map(([carrera, count]) => [carrera, count]);
+        doc.autoTable({
+            startY: yPos + 5,
+            head: [['Carrera', 'Cantidad de Inscritos']],
+            body: resumenBody,
+            theme: 'striped',
+            styles: { fontSize: 10, cellPadding: 2 },
+            headStyles: { fillColor: [0, 123, 255], textColor: 255, fontStyle: 'bold' }, 
+            margin: { left: 20, right: 20 }
+        });
+
+        yPos = doc.autoTable.previous.finalY + 15;
+
+        // Detalle de Inscripciones (se sigue generando para el PDF completo)
+        doc.setFontSize(14);
+        doc.text("Detalle de Todas las Inscripciones:", 20, yPos);
+        yPos += 5;
+
+        const detalleBody = inscripciones.map((inscripcion, index) => [
+            index + 1,
+            `${inscripcion.nombres || ''} ${inscripcion.apellidoPaterno || ''}`,
+            inscripcion.ci || 'N/A',
+            inscripcion.carrera || 'N/A',
+            inscripcion.grado || 'N/A',
+            inscripcion.paralelo || 'N/A',
+            inscripcion.fechaInscripcion || 'N/A'
+        ]);
+
+        doc.autoTable({
+            startY: yPos + 5,
+            head: [['#', 'Nombre Completo', 'CI', 'Carrera', 'Grado', 'Paralelo', 'Fecha Insc.']],
+            body: detalleBody,
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
+            headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' }, 
+            columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 25 }, 3: { cellWidth: 'auto' } },
+            margin: { left: 20, right: 20 }
+        });
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Reporte generado el: ${new Date().toLocaleString('es-ES')}`, 20, doc.internal.pageSize.height - 15);
+
+        doc.save('reporte_general_inscripciones_ITEC.pdf');
+    });
+
+    // --- Funciones para Eliminar y Modificar Inscripciones ---
+
+    function eliminarInscripcion(index) {
+        if (confirm('¿Estás seguro de que quieres eliminar esta inscripción?')) {
+            let inscripciones = cargarInscripciones();
+            inscripciones.splice(index, 1); 
+            guardarInscripciones(inscripciones);
+            actualizarResumenInscripciones(); 
+            alert('Inscripción eliminada correctamente.');
+        }
+    }
+
+    function modificarInscripcion(index) {
+        let inscripciones = cargarInscripciones();
+        const inscripcionAModificar = inscripciones[index];
+
+        if (!inscripcionAModificar) {
+            alert('No se encontró la inscripción para modificar.');
+            return;
+        }
+
+        reporteInscripcionesDiv.style.display = 'none';
+        panelCarreras.style.display = 'block';
+        seccionInscripcion.style.display = 'block';
+        opcionesGrados.style.display = 'block'; 
+
+        nombresInput.value = inscripcionAModificar.nombres || '';
+        apellidoPaternoInput.value = inscripcionAModificar.apellidoPaterno || '';
+        apellidoMaternoInput.value = inscripcionAModificar.apellidoMaterno || '';
+        fechaNacimientoInput.value = inscripcionAModificar.fechaNacimiento || '';
+        ciInput.value = inscripcionAModificar.ci || '';
+        generoSelect.value = inscripcionAModificar.genero || '';
+        inscripcionIndexInput.value = index; 
+
+        carreraRadios.forEach(radio => {
+            radio.checked = (radio.value === inscripcionAModificar.carrera);
+        });
+        document.getElementById('grado').value = inscripcionAModificar.grado || '';
+        document.getElementById('paralelo').value = inscripcionAModificar.paralelo || '';
+
+        document.getElementById('guardarDatosPersonales').textContent = 'Actualizar Inscripción';
+        document.getElementById('guardarDatosPersonales').classList.remove('btn-primary');
+        document.getElementById('guardarDatosPersonales').classList.add('btn-success');
+        
+        verificarInscripcionBtn.style.display = 'block'; // Asegurarse de que este botón sea visible para actualizar
+        verificarInscripcionBtn.textContent = 'Actualizar Verificación y Guardar'; // Cambiar texto
+        generarReporteBtn.style.display = 'none'; // Ocultar generar reporte individual hasta que se actualice
+        
+        alert('Cargando datos para modificar la inscripción. Haz tus cambios y presiona "Actualizar Verificación y Guardar".');
+        inscripcionData = { ...inscripcionAModificar }; // Cargar los datos para inscripcionData para el PDF
+    }
+
+    // Función para limpiar todos los formularios
+    function limpiarFormularios() {
+        formDatosPersonales.reset();
+        formCarreras.reset();
+        inscripcionIndexInput.value = ''; 
+        document.getElementById('guardarDatosPersonales').textContent = 'Guardar Datos';
+        document.getElementById('guardarDatosPersonales').classList.remove('btn-success');
+        document.getElementById('guardarDatosPersonales').classList.add('btn-primary');
+
+        verificarInscripcionBtn.style.display = 'none'; // Ocultar al inicio
+        verificarInscripcionBtn.textContent = 'Verificar y Guardar Inscripción'; // Resetear texto
+        generarReporteBtn.style.display = 'none'; 
+        opcionesGrados.style.display = 'none'; 
+        
+        inscripcionData = {};
+    }
+
+    // --- Función para alternar la visibilidad de la tabla detallada ---
+    toggleDetalleTablaBtn.addEventListener('click', function() {
+        if (detalleTablaInscripciones.style.display === 'none') {
+            detalleTablaInscripciones.style.display = 'block';
+            toggleDetalleTablaBtn.textContent = 'Ocultar Detalle';
+        } else {
+            detalleTablaInscripciones.style.display = 'none';
+            toggleDetalleTablaBtn.textContent = 'Mostrar/Ocultar Detalle';
+        }
+    });
+
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
